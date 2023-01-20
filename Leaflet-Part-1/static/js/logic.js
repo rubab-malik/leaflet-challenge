@@ -3,10 +3,10 @@ let queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_we
 // Perform a GET request to the query URL/
 d3.json(queryUrl).then(function (data) {
                    
+// Once we get a response, send the data.features object to the createFeatures function.
   
-  // Once we get a response, send the data.features object to the createFeatures function.
-  createFeatures(data.features);
-  
+createFeatures(data.features);
+  console.log(data.features)
 });
 
 function chooseColor(magnitude) {
@@ -14,7 +14,7 @@ function chooseColor(magnitude) {
   case magnitude > 5:
       return "#891446";
   case magnitude > 4:
-      return "#900C3F";
+      return "#ff4040";
   case magnitude > 3:
       return "#00729c";
   case magnitude > 2:
@@ -27,18 +27,17 @@ function chooseColor(magnitude) {
 }
 
 function createFeatures(earthquakeData) {
-
-  // Define a function that we want to run once for each feature in the features array.
-  // Give each feature a popup that describes the place and time of the earthquake.
+// Define a function that we want to run once for each feature in the features array.
+// Give each feature a popup that describes the place and time of the earthquake.
   function onEachFeature(feature, layer) {
     layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p><hr><h2>${feature.properties.mag}"</h2>`);
   }
 
   function createCircleMarker(feature,latlng){
     let options = {
-        radius:feature.properties.mag*5,
-        color: chooseColor(feature.properties.mag),
-        fillColor:chooseColor(feature.properties.mag),
+        radius:feature.properties.mag*8,
+        fillColor: chooseColor(feature.geometry.coordinates[2]),
+        color:chooseColor(feature.properties.mag),
 
         weight: 1,
         opacity: .8,
@@ -46,7 +45,6 @@ function createFeatures(earthquakeData) {
     }
     return L.circleMarker(latlng, options);
 }
-
   // Create a GeoJSON layer that contains the features array on the earthquakeData object.
   // Run the onEachFeature function once for each piece of data in the array.
   let earthquakes = L.geoJSON(earthquakeData, {
@@ -54,10 +52,7 @@ function createFeatures(earthquakeData) {
     pointToLayer: createCircleMarker
     
   });
-
   // set legend at bottom right of screen
-
-
   // Send our earthquakes layer to the createMap function/
   createMap(earthquakes);
 }
@@ -84,7 +79,6 @@ function createMap(earthquakes) {
     Earthquakes: earthquakes
   };
 
-
   // Create our map, giving it the streetmap and earthquakes layers to display on load.
   let myMap = L.map("map", {
     center: [
@@ -100,55 +94,23 @@ function createMap(earthquakes) {
   L.control.layers(baseMaps, overlayMaps, {
     collapsed: false
   }).addTo(myMap);
-
+  let legend = L.control({
+    position: 'bottomright'
+  });
+  
+  // add legend
+  legend.onAdd = function () {
+    let div = L.DomUtil.create('div', 'info legend');
+    let levels = ['-10-10','10-30','30-50','50-70','70-90','90+'];
+    let colors = ['#3a9c00','#fc74fd','#9c9200','#00729c','#ff4040','#891446'];
+    for (let i=0; i < levels.length; i++) {
+      div.innerHTML += '<i style="background:' + colors[i] + '"></i>' + levels[i] + '<br>';
+    }
+    return div;
+  }
+  legend.addTo(myMap);
 }
 
-// let legend = L.control({
-//   position: 'bottomright'
-// });
-
-// // add legend
-// legend.onAdd = function (color) {
-//   let div = L.DomUtil.create('div', 'info legend');
-//   let levels = ['-10-10','10-30','30-50','50-70','70-90','90+'];
-//   let colors = ['#00ff00','#ccff00','#f8de7e','#ed9121','#ff4040','#b31b1b'];
-//   for (let i=0; i < levels.length; i++) {
-//     div.innerHTML += '<i style="background:' + colors[i] + '"></i>' + levels[i] + '<br>';
-//   }
-//   return div;
-// }
-// legend.addTo(myMap);
-
-
-let info = L.control({
-  position:'bottomright'
-});
-
-// // When the layer control is added, insert a div with the class of "legend".
-// info.onAdd = function(color) {
-//   let div = L.DomUtil.create("div", "legend");
-//   return div;
-// };
-// // Add the info legend to the map.
-// info.addTo(myMap);
-
-info.onAdd = function (map) {
-  let div = L.DomUtil.create('div', 'info legend');
-      // div.innerHTML +=
-      // '<img src="change_legend.png" alt="legend" width="134" height="147">';
-  return div;
-  };
-  
-  // Add this one (only) for now, as the Population layer is on by default
-  info.addTo(myMap);
-
-
-
-
 d3.json(queryUrl).then(function (data) {
-
-  // This function returns the style data for each of the earthquakes we plot on
-  // the map. We pass the magnitude of the earthquake into two separate functions
-  // to calculate the color and radius.
  
 });
